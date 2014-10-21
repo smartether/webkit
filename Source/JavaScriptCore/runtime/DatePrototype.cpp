@@ -58,7 +58,7 @@
 #include <sys/timeb.h>
 #endif
 
-#if !(OS(DARWIN) && USE(CF))
+#if !(OS(DARWIN) && USE(CF)) && USE(ICU_UNICODE)
 #include <unicode/udat.h>
 #endif
 
@@ -122,77 +122,87 @@ EncodedJSValue JSC_HOST_CALL dateProtoFuncToJSON(ExecState*);
 
 namespace JSC {
 
-enum LocaleDateTimeFormat { LocaleDateAndTime, LocaleDate, LocaleTime };
- 
+	enum LocaleDateTimeFormat { LocaleDateAndTime, LocaleDate, LocaleTime };
+
 #if OS(DARWIN) && USE(CF)
 
-// FIXME: Since this is superior to the strftime-based version, why limit this to OS(DARWIN)?
-// Instead we should consider using this whenever USE(CF) is true.
+	// FIXME: Since this is superior to the strftime-based version, why limit this to OS(DARWIN)?
+	// Instead we should consider using this whenever USE(CF) is true.
 
-static CFDateFormatterStyle styleFromArgString(const String& string, CFDateFormatterStyle defaultStyle)
-{
-    if (string == "short")
-        return kCFDateFormatterShortStyle;
-    if (string == "medium")
-        return kCFDateFormatterMediumStyle;
-    if (string == "long")
-        return kCFDateFormatterLongStyle;
-    if (string == "full")
-        return kCFDateFormatterFullStyle;
-    return defaultStyle;
-}
+	static CFDateFormatterStyle styleFromArgString(const String& string, CFDateFormatterStyle defaultStyle)
+	{
+		if (string == "short")
+			return kCFDateFormatterShortStyle;
+		if (string == "medium")
+			return kCFDateFormatterMediumStyle;
+		if (string == "long")
+			return kCFDateFormatterLongStyle;
+		if (string == "full")
+			return kCFDateFormatterFullStyle;
+		return defaultStyle;
+	}
 
-static JSCell* formatLocaleDate(ExecState* exec, DateInstance*, double timeInMilliseconds, LocaleDateTimeFormat format)
-{
-    CFDateFormatterStyle dateStyle = (format != LocaleTime ? kCFDateFormatterLongStyle : kCFDateFormatterNoStyle);
-    CFDateFormatterStyle timeStyle = (format != LocaleDate ? kCFDateFormatterLongStyle : kCFDateFormatterNoStyle);
+	static JSCell* formatLocaleDate(ExecState* exec, DateInstance*, double timeInMilliseconds, LocaleDateTimeFormat format)
+	{
+		CFDateFormatterStyle dateStyle = (format != LocaleTime ? kCFDateFormatterLongStyle : kCFDateFormatterNoStyle);
+		CFDateFormatterStyle timeStyle = (format != LocaleDate ? kCFDateFormatterLongStyle : kCFDateFormatterNoStyle);
 
-    bool useCustomFormat = false;
-    String customFormatString;
+		bool useCustomFormat = false;
+		String customFormatString;
 
-    String arg0String = exec->argument(0).toString(exec)->value(exec);
-    if (arg0String == "custom" && !exec->argument(1).isUndefined()) {
-        useCustomFormat = true;
-        customFormatString = exec->argument(1).toString(exec)->value(exec);
-    } else if (format == LocaleDateAndTime && !exec->argument(1).isUndefined()) {
-        dateStyle = styleFromArgString(arg0String, dateStyle);
-        timeStyle = styleFromArgString(exec->argument(1).toString(exec)->value(exec), timeStyle);
-    } else if (format != LocaleTime && !exec->argument(0).isUndefined())
-        dateStyle = styleFromArgString(arg0String, dateStyle);
-    else if (format != LocaleDate && !exec->argument(0).isUndefined())
-        timeStyle = styleFromArgString(arg0String, timeStyle);
+		String arg0String = exec->argument(0).toString(exec)->value(exec);
+		if (arg0String == "custom" && !exec->argument(1).isUndefined()) {
+			useCustomFormat = true;
+			customFormatString = exec->argument(1).toString(exec)->value(exec);
+		} else if (format == LocaleDateAndTime && !exec->argument(1).isUndefined()) {
+			dateStyle = styleFromArgString(arg0String, dateStyle);
+			timeStyle = styleFromArgString(exec->argument(1).toString(exec)->value(exec), timeStyle);
+		} else if (format != LocaleTime && !exec->argument(0).isUndefined())
+			dateStyle = styleFromArgString(arg0String, dateStyle);
+		else if (format != LocaleDate && !exec->argument(0).isUndefined())
+			timeStyle = styleFromArgString(arg0String, timeStyle);
 
-    CFAbsoluteTime absoluteTime = floor(timeInMilliseconds / msPerSecond) - kCFAbsoluteTimeIntervalSince1970;
+		CFAbsoluteTime absoluteTime = floor(timeInMilliseconds / msPerSecond) - kCFAbsoluteTimeIntervalSince1970;
 
-    auto formatter = adoptCF(CFDateFormatterCreate(kCFAllocatorDefault, adoptCF(CFLocaleCopyCurrent()).get(), dateStyle, timeStyle));
-    if (useCustomFormat)
-        CFDateFormatterSetFormat(formatter.get(), customFormatString.createCFString().get());
-    return jsNontrivialString(exec, adoptCF(CFDateFormatterCreateStringWithAbsoluteTime(kCFAllocatorDefault, formatter.get(), absoluteTime)).get());
-}
+		auto formatter = adoptCF(CFDateFormatterCreate(kCFAllocatorDefault, adoptCF(CFLocaleCopyCurrent()).get(), dateStyle, timeStyle));
+		if (useCustomFormat)
+			CFDateFormatterSetFormat(formatter.get(), customFormatString.createCFString().get());
+		return jsNontrivialString(exec, adoptCF(CFDateFormatterCreateStringWithAbsoluteTime(kCFAllocatorDefault, formatter.get(), absoluteTime)).get());
+	}
 
-#elif !UCONFIG_NO_FORMATTING
+#elif USE(ICU_UNICODE) && !UCONFIG_NO_FORMATTING
 
-static JSCell* formatLocaleDate(ExecState* exec, DateInstance*, double timeInMilliseconds, LocaleDateTimeFormat format)
-{
-    UDateFormatStyle timeStyle = (format != LocaleDate ? UDAT_LONG : UDAT_NONE);
-    UDateFormatStyle dateStyle = (format != LocaleTime ? UDAT_LONG : UDAT_NONE);
+	static JSCell* formatLocaleDate(ExecState* exec, DateInstance*, double timeInMilliseconds, LocaleDateTimeFormat format)
+	{
+		UDateFormatStyle timeStyle = (format != LocaleDate ? UDAT_LONG : UDAT_NONE);
+		UDateFormatStyle dateStyle = (format != LocaleTime ? UDAT_LONG : UDAT_NONE);
 
-    UErrorCode status = U_ZERO_ERROR;
-    UDateFormat* df = udat_open(timeStyle, dateStyle, 0, 0, -1, 0, 0, &status);
-    if (!df)
-        return jsEmptyString(exec);
+		UErrorCode status = U_ZERO_ERROR;
+		UDateFormat* df = udat_open(timeStyle, dateStyle, 0, 0, -1, 0, 0, &status);
+		if (!df)
+			return jsEmptyString(exec);
 
-    UChar buffer[128];
-    int32_t length;
-    length = udat_format(df, timeInMilliseconds, buffer, 128, 0, &status);
-    udat_close(df);
-    if (status != U_ZERO_ERROR)
-        return jsEmptyString(exec);
+		UChar buffer[128];
+		int32_t length;
+		length = udat_format(df, timeInMilliseconds, buffer, 128, 0, &status);
+		udat_close(df);
+		if (status != U_ZERO_ERROR)
+			return jsEmptyString(exec);
 
-    return jsNontrivialString(exec, String(buffer, length));
-}
+		return jsNontrivialString(exec, String(buffer, length));
+	}
 
 #else
+
+#if OS(WINDOWS)
+	inline static int getDateFormatWin(DWORD dwFlags, const SYSTEMTIME *lpDate, LPWSTR lpDateStr, int cchDate) {
+#if PLATFORM(WIN)
+	return GetDateFormatW(LOCALE_USER_DEFAULT, dwFlags, lpDate, 0, lpDateStr, cchDate);
+#elif PLATFORM(WINRT)
+	return GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dwFlags, lpDate, 0, lpDateStr, cchDate, NULL);
+#endif
+	}
+#endif
 
 static JSCell* formatLocaleDate(ExecState* exec, const GregorianDateTime& gdt, LocaleDateTimeFormat format)
 {
@@ -211,17 +221,17 @@ static JSCell* formatLocaleDate(ExecState* exec, const GregorianDateTime& gdt, L
     size_t length = 0;
 
     if (format == LocaleDate) {
-        buffer.resize(GetDateFormatW(LOCALE_USER_DEFAULT, DATE_LONGDATE, &systemTime, 0, 0, 0));
-        length = GetDateFormatW(LOCALE_USER_DEFAULT, DATE_LONGDATE, &systemTime, 0, buffer.data(), buffer.size());
+		buffer.resize(getDateFormatWin(DATE_LONGDATE, &systemTime, 0, 0));
+		length = getDateFormatWin(DATE_LONGDATE, &systemTime, buffer.data(), buffer.size());
     } else if (format == LocaleTime) {
-        buffer.resize(GetTimeFormatW(LOCALE_USER_DEFAULT, 0, &systemTime, 0, 0, 0));
-        length = GetTimeFormatW(LOCALE_USER_DEFAULT, 0, &systemTime, 0, buffer.data(), buffer.size());
+		buffer.resize(getDateFormatWin(0, &systemTime, 0, 0));
+		length = getDateFormatWin(0, &systemTime, buffer.data(), buffer.size());
     } else if (format == LocaleDateAndTime) {
-        buffer.resize(GetDateFormatW(LOCALE_USER_DEFAULT, DATE_LONGDATE, &systemTime, 0, 0, 0) + GetTimeFormatW(LOCALE_USER_DEFAULT, 0, &systemTime, 0, 0, 0));
-        length = GetDateFormatW(LOCALE_USER_DEFAULT, DATE_LONGDATE, &systemTime, 0, buffer.data(), buffer.size());
+		buffer.resize(getDateFormatWin(DATE_LONGDATE, &systemTime, 0, 0) + getDateFormatWin(0, &systemTime, 0, 0));
+		length = getDateFormatWin(DATE_LONGDATE, &systemTime, buffer.data(), buffer.size());
         if (length) {
             buffer[length - 1] = ' ';
-            length += GetTimeFormatW(LOCALE_USER_DEFAULT, 0, &systemTime, 0, buffer.data() + length, buffer.size() - length);
+			length += getDateFormatWin(0, &systemTime, buffer.data() + length, buffer.size() - length);
         }
     } else
         RELEASE_ASSERT_NOT_REACHED();

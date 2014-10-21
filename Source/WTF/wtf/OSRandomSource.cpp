@@ -36,7 +36,9 @@
 
 #if OS(WINDOWS)
 #include <windows.h>
+#if PLATFORM(WIN)
 #include <wincrypt.h> // windows.h must be included before wincrypt.h.
+#endif
 #endif
 
 namespace WTF {
@@ -53,12 +55,18 @@ void cryptographicallyRandomValuesFromOS(unsigned char* buffer, size_t length)
 
     close(fd);
 #elif OS(WINDOWS)
+#if PLATFORM(WINRT)
+	Windows::Storage::Streams::IBuffer^ randomBuffer = Windows::Security::Cryptography::CryptographicBuffer::GenerateRandom(length);
+	Platform::Array<unsigned char, 1U>^ platformArray = ref new Platform::Array<unsigned char, 1U>(buffer, length);
+	Windows::Security::Cryptography::CryptographicBuffer::CopyToByteArray(randomBuffer, &platformArray);
+#elif PLATFORM(WIN)
     HCRYPTPROV hCryptProv = 0;
     if (!CryptAcquireContext(&hCryptProv, 0, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
         CRASH();
     if (!CryptGenRandom(hCryptProv, length, buffer))
         CRASH();
     CryptReleaseContext(hCryptProv, 0);
+#endif
 #else
     #error "This configuration doesn't have a strong source of randomness."
     // WARNING: When adding new sources of OS randomness, the randomness must

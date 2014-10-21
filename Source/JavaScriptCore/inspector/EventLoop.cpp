@@ -46,6 +46,7 @@ CFStringRef EventLoop::remoteInspectorRunLoopMode()
 void EventLoop::cycle()
 {
 #if OS(WINDOWS)
+#if PLATFORM(WIN)
     MSG msg;
     if (!GetMessage(&msg, 0, 0, 0)) {
         m_ended = true;
@@ -53,6 +54,8 @@ void EventLoop::cycle()
     }
     TranslateMessage(&msg);
     DispatchMessage(&msg);
+#elif PLATFORM(WINRT)
+#endif
 #elif USE(CF)
     // Run the RunLoop in a custom run loop mode to prevent default observers
     // to run and potentially evaluate JavaScript in this context while we are

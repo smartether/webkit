@@ -24,8 +24,7 @@
 #define StringImpl_h
 
 #include <limits.h>
-#include <unicode/uchar.h>
-#include <unicode/ustring.h>
+#include <wtf/unicode/Unicode.h>
 #include <wtf/ASCIICType.h>
 #include <wtf/Forward.h>
 #include <wtf/MathExtras.h>
@@ -688,7 +687,7 @@ public:
     WTF_EXPORT_STRING_API PassRef<StringImpl> replace(StringImpl*, StringImpl*);
     WTF_EXPORT_STRING_API PassRef<StringImpl> replace(unsigned index, unsigned len, StringImpl*);
 
-    WTF_EXPORT_STRING_API UCharDirection defaultWritingDirection(bool* hasStrongDirectionality = nullptr);
+    WTF_EXPORT_STRING_API Unicode::Direction defaultWritingDirection(bool* hasStrongDirectionality = nullptr);
 
 #if USE(CF)
     RetainPtr<CFStringRef> createCFString();
@@ -1104,7 +1103,7 @@ inline bool equalIgnoringCase(const char* a, const LChar* b, unsigned length) { 
 inline bool equalIgnoringCase(const UChar* a, const UChar* b, int length)
 {
     ASSERT(length >= 0);
-    return !u_memcasecmp(a, b, length, U_FOLD_CASE_DEFAULT);
+	return Unicode::umemcasecmp(a, b, length);
 }
 WTF_EXPORT_STRING_API bool equalIgnoringCaseNonNull(const StringImpl*, const StringImpl*);
 
@@ -1310,7 +1309,7 @@ inline bool isSpaceOrNewline(UChar c)
 {
     // Use isASCIISpace() for basic Latin-1.
     // This will include newlines, which aren't included in Unicode DirWS.
-    return c <= 0x7F ? isASCIISpace(c) : u_charDirection(c) == U_WHITE_SPACE_NEUTRAL;
+	return c <= 0x7F ? isASCIISpace(c) : Unicode::direction(c) == Unicode::Direction::WhiteSpaceNeutral;
 }
 
 template<typename CharacterType>

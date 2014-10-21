@@ -22,7 +22,7 @@
 #ifndef WTF_StringHasher_h
 #define WTF_StringHasher_h
 
-#include <unicode/utypes.h>
+#include <wtf/unicode/Unicode.h>
 #include <wtf/text/LChar.h>
 
 namespace WTF {

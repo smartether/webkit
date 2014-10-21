@@ -24,59 +24,43 @@
  */
 
 #include "config.h"
+#include "OSAllocator.h"
+
+#if OS(WINDOWS) && PLATFORM(WINRT)
+
+#include "windows.h"
 #include "PageBlock.h"
-
-#if OS(UNIX)
-#include <unistd.h>
-#endif
-
-#if OS(WINDOWS)
-#include <malloc.h>
-#include <windows.h>
-#endif
+#include <wtf/Assertions.h>
 
 namespace WTF {
 
-static size_t s_pageSize;
-static size_t s_pageMask;
-
-#if OS(UNIX)
-
-inline size_t systemPageSize()
+void* OSAllocator::reserveUncommitted(size_t bytes, Usage, bool writable, bool executable, bool)
 {
-    return getpagesize();
+	void* result = _aligned_malloc(bytes, pageSize());
+    if (!result)
+        CRASH();
+	ZeroMemory(result, bytes);
+    return result;
 }
 
-#elif OS(WINDOWS)
-
-inline size_t systemPageSize()
+void* OSAllocator::reserveAndCommit(size_t bytes, Usage usage, bool writable, bool executable, bool)
 {
-    static size_t size = 0;
-    SYSTEM_INFO system_info;
-#if PLATFORM(WINRT)
-    GetNativeSystemInfo(&system_info);
-#elif PLATFORM(WIN)
-	GetSystemInfo(&system_info);
-#endif
-    size = system_info.dwPageSize;
-    return size;
+	return reserveUncommitted(bytes, usage, writable, executable);
 }
 
-#endif
-
-size_t pageSize()
+void OSAllocator::commit(void* address, size_t bytes, bool writable, bool executable)
 {
-    if (!s_pageSize)
-        s_pageSize = systemPageSize();
-    ASSERT(isPowerOfTwo(s_pageSize));
-    return s_pageSize;
 }
 
-size_t pageMask()
+void OSAllocator::decommit(void* address, size_t bytes)
+{ 
+}
+
+void OSAllocator::releaseDecommitted(void* address, size_t bytes)
 {
-    if (!s_pageMask)
-        s_pageMask = ~(pageSize() - 1);
-    return s_pageMask;
+	_aligned_free(address);
 }
 
 } // namespace WTF
+
+#endif // OS(WINDOWS) && PLATFORM(WINRT)

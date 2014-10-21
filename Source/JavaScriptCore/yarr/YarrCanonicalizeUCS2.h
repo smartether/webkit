@@ -27,7 +27,7 @@
 #define YarrCanonicalizeUCS2_H
 
 #include <stdint.h>
-#include <unicode/utypes.h>
+#include <wtf/unicode/Unicode.h>
 
 namespace JSC { namespace Yarr {
 

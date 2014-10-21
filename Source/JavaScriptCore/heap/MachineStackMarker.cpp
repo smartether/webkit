@@ -262,7 +262,9 @@ static inline void suspendThread(const PlatformThread& platformThread)
 #if OS(DARWIN)
     thread_suspend(platformThread);
 #elif OS(WINDOWS)
+#if PLATFORM(WIN)
     SuspendThread(platformThread);
+#endif
 #elif USE(PTHREADS)
     pthread_kill(platformThread, SigThreadSuspendResume);
 #else
@@ -275,7 +277,9 @@ static inline void resumeThread(const PlatformThread& platformThread)
 #if OS(DARWIN)
     thread_resume(platformThread);
 #elif OS(WINDOWS)
+#if PLATFORM(WIN)
     ResumeThread(platformThread);
+#endif
 #elif USE(PTHREADS)
     pthread_kill(platformThread, SigThreadSuspendResume);
 #else
@@ -348,7 +352,9 @@ static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, P
 
 #elif OS(WINDOWS)
     regs.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
+#if PLATFORM(WIN)
     GetThreadContext(platformThread, &regs);
+#endif
     return sizeof(CONTEXT);
 #elif USE(PTHREADS)
     pthread_attr_init(&regs);

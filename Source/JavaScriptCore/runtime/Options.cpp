@@ -105,7 +105,7 @@ static bool parse(const char* string, GCLogging::Level& value)
 template<typename T>
 bool overrideOptionWithHeuristic(T& variable, const char* name)
 {
-#if !OS(WINCE)
+#if !OS(WINCE) && !PLATFORM(WINRT)
     const char* stringValue = getenv(name);
     if (!stringValue)
         return false;

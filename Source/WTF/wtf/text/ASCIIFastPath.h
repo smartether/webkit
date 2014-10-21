@@ -23,7 +23,7 @@
 #define ASCIIFastPath_h
 
 #include <stdint.h>
-#include <unicode/utypes.h>
+#include <wtf/unicode/Unicode.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/LChar.h>
 

@@ -176,7 +176,8 @@
 #if   defined(arm) \
     || defined(__arm__) \
     || defined(ARM) \
-    || defined(_ARM_)
+    || defined(_ARM_) \
+	|| defined(_M_ARM)
 #define WTF_CPU_ARM 1
 
 #if defined(__ARM_PCS_VFP)
@@ -274,6 +275,10 @@
     || defined(__ARM_ARCH_7R__) \
     || defined(__ARM_ARCH_7S__)
 #define WTF_THUMB_ARCH_VERSION 4
+
+/* MSVC sets _M_ARMT */
+#elif defined(_M_ARMT)
+#define WTF_THUMB_ARCH_VERSION _M_ARMT
 
 /* RVCT sets __TARGET_ARCH_THUMB */
 #elif defined(__TARGET_ARCH_THUMB)
@@ -443,7 +448,21 @@
 #define WTF_PLATFORM_IOS_SIMULATOR 1
 #endif
 #elif OS(WINDOWS)
+#include <winapifamily.h>
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #define WTF_PLATFORM_WIN 1
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP)
+#define WTF_PLATFORM_WINDOWS_STORE 1
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+#define WTF_PLATFORM_WINDOWS_PHONE 1
+#else
+#error "Unknown WinAPI Family Partition"
+#endif
+#endif
+
+/* PLATFORM(WINRT) */
+#if PLATFORM(WINDOWS_STORE) || PLATFORM(WINDOWS_PHONE)
+#define WTF_PLATFORM_WINRT 1
 #endif
 
 /* PLATFORM(COCOA) */
@@ -915,11 +934,11 @@
    since most ports try to support sub-project independence, adding new headers
    to WTF causes many ports to break, and so this way we can address the build
    breakages one port at a time. */
-#if !defined(WTF_USE_EXPORT_MACROS) && (PLATFORM(COCOA) || PLATFORM(WIN))
+#if !defined(WTF_USE_EXPORT_MACROS) && (PLATFORM(COCOA) || PLATFORM(WIN) || PLATFORM(WINRT))
 #define WTF_USE_EXPORT_MACROS 1
 #endif
 
-#if !defined(WTF_USE_EXPORT_MACROS_FOR_TESTING) && (PLATFORM(GTK) || PLATFORM(WIN))
+#if !defined(WTF_USE_EXPORT_MACROS_FOR_TESTING) && (PLATFORM(GTK) || PLATFORM(WIN) || PLATFORM(WINRT))
 #define WTF_USE_EXPORT_MACROS_FOR_TESTING 1
 #endif
 

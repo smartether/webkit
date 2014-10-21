@@ -111,7 +111,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
 
     // Fall through to write to stderr in the same manner as other platforms.
 
-#elif HAVE(ISDEBUGGERPRESENT)
+#elif HAVE(ISDEBUGGERPRESENT) && defined(_DEBUG)
     if (IsDebuggerPresent()) {
         size_t size = 1024;
 
@@ -236,6 +236,7 @@ void WTFGetBacktrace(void** stack, int* size)
 #if OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))
     *size = backtrace(stack, *size);
 #elif OS(WINDOWS) && !OS(WINCE)
+#if PLATFORM(WIN)
     // The CaptureStackBackTrace function is available in XP, but it is not defined
     // in the Windows Server 2003 R2 Platform SDK. So, we'll grab the function
     // through GetProcAddress.
@@ -251,6 +252,9 @@ void WTFGetBacktrace(void** stack, int* size)
         *size = captureStackBackTraceFunc(0, *size, stack, 0);
     else
         *size = 0;
+#else
+	*size = 0;
+#endif
 #else
     *size = 0;
 #endif

@@ -165,7 +165,7 @@ bool isStrWhiteSpace(UChar c)
         case 0xFEFF:
             return true;
         default:
-            return c > 0xFF && u_charType(c) == U_SPACE_SEPARATOR;
+            return c > 0xFF && WTF::Unicode::category(c) == WTF::Unicode::CharCategory::Separator_Space;
     }
 }
 

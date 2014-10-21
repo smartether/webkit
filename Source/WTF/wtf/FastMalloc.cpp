@@ -117,15 +117,18 @@
 namespace WTF {
 
 #if OS(WINDOWS)
-
 // TLS_OUT_OF_INDEXES is not defined on WinCE.
 #ifndef TLS_OUT_OF_INDEXES
 #define TLS_OUT_OF_INDEXES 0xffffffff
 #endif
 
+#if PLATFORM(WIN)
 static DWORD isForibiddenTlsIndex = TLS_OUT_OF_INDEXES;
 static const LPVOID kTlsAllowValue = reinterpret_cast<LPVOID>(0); // Must be zero.
 static const LPVOID kTlsForbiddenValue = reinterpret_cast<LPVOID>(1);
+#elif PLATFORM(WINRT)
+__declspec(thread) static bool g_isForbidden = false;
+#endif
 
 #if !ASSERT_DISABLED
 static bool isForbidden()
@@ -133,22 +136,34 @@ static bool isForbidden()
     // By default, fastMalloc is allowed so we don't allocate the
     // tls index unless we're asked to make it forbidden. If TlsSetValue
     // has not been called on a thread, the value returned by TlsGetValue is 0.
+#if PLATFORM(WIN)
     return (isForibiddenTlsIndex != TLS_OUT_OF_INDEXES) && (TlsGetValue(isForibiddenTlsIndex) == kTlsForbiddenValue);
+#elif PLATFORM(WINRT)
+	return g_isForbidden;
+#endif
 }
 #endif
 
 void fastMallocForbid()
 {
+#if PLATFORM(WIN)
     if (isForibiddenTlsIndex == TLS_OUT_OF_INDEXES)
         isForibiddenTlsIndex = TlsAlloc(); // a little racey, but close enough for debug only
     TlsSetValue(isForibiddenTlsIndex, kTlsForbiddenValue);
+#elif PLATFORM(WINRT)
+	g_isForbidden = true;
+#endif
 }
 
 void fastMallocAllow()
 {
+#if PLATFORM(WIN)
     if (isForibiddenTlsIndex == TLS_OUT_OF_INDEXES)
         return;
     TlsSetValue(isForibiddenTlsIndex, kTlsAllowValue);
+#elif PLATFORM(WINRT)
+	g_isForbidden = false;
+#endif
 }
 
 #else // !OS(WINDOWS)

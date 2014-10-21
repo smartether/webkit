@@ -29,35 +29,35 @@
 #include "config.h"
 #include "Collator.h"
 
-#if UCONFIG_NO_COLLATION
-
 #include <wtf/text/StringView.h>
 
 namespace WTF {
 
-int Collator::collate(StringView a, StringView b)
+Collator::Collator(const char* locale, bool shouldSortLowercaseFirst)
+	: m_locale(strdup(locale))
+	, m_shouldSortLowercaseFirst(shouldSortLowercaseFirst)
 {
-    unsigned commonLength = std::min(a.length(), b.length());
-    for (unsigned i = 0; i < commonLength; ++i) {
-        if (a[i] < b[i])
-            return -1;
-        if (a[i] > b[i])
-            return 1;
-    }
-
-    if (a.length() < b.length())
-        return -1;
-    if (a.length() > b.length())
-        return 1;
-
-    return 0;
+	size_t localeSize = strlen(locale) + 1;
+	wchar_t* wcstring = new wchar_t[localeSize];
+	mbstowcs_s(nullptr, wcstring, localeSize, locale, _TRUNCATE);
+	m_collator = reinterpret_cast<UCollator*>(wcstring);
 }
 
-int Collator::collateUTF8(const char* a, const char* b)
+Collator::~Collator()
+{
+	free(m_locale);
+	wchar_t* wcstring = reinterpret_cast<wchar_t*>(m_collator);
+	delete[] wcstring;
+}
+
+int Collator::collate(StringView a, StringView b) const
+{
+	return CompareStringEx(reinterpret_cast<LPCWSTR>(m_collator), 0, a.upconvertedCharacters(), a.length(), b.upconvertedCharacters(), b.length(), nullptr, nullptr, 0);
+}
+
+int Collator::collateUTF8(const char* a, const char* b) const
 {
     return collate(String::fromUTF8(a), String::fromUTF8(b));
 }
 
 }
-
-#endif

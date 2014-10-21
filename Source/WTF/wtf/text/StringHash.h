@@ -78,7 +78,7 @@ namespace WTF {
             if (std::is_same<T, LChar>::value)
                 return StringImpl::latin1CaseFoldTable[character];
             
-            return u_foldCase(character, U_FOLD_CASE_DEFAULT);
+			return Unicode::foldCase(character);
         }
 
         static unsigned hash(const UChar* data, unsigned length)

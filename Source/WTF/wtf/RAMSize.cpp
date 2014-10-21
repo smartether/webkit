@@ -69,12 +69,16 @@ static size_t computeRAMSize()
         return ramSizeGuess;
     return status.dwTotalPhys;
 #elif OS(WINDOWS)
+#if PLATFORM(WIN)
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
     bool result = GlobalMemoryStatusEx(&status);
     if (!result)
         return ramSizeGuess;
     return status.ullTotalPhys;
+#elif PLATFORM(WINRT)
+	return Windows::System::MemoryManager::AppMemoryUsageLimit;
+#endif
 #endif
 }
 

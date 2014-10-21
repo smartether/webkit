@@ -266,7 +266,7 @@ VM::VM(VMType vmType, HeapType heapType)
         m_perBytecodeProfiler = adoptPtr(new Profiler::Database(*this));
 
         StringPrintStream pathOut;
-#if !OS(WINCE)
+#if !OS(WINCE) && !PLATFORM(WINRT)
         const char* profilerPath = getenv("JSC_PROFILER_PATH");
         if (profilerPath)
             pathOut.print(profilerPath, "/");

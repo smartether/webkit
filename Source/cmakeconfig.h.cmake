@@ -139,6 +139,8 @@
 #cmakedefine01 USE_SYSTEM_MALLOC
 #cmakedefine01 WTF_USE_GEOCLUE2
 #cmakedefine01 WTF_USE_TILED_BACKING_STORE
+#cmakedefine01 WTF_USE_ICU_UNICODE
+#cmakedefine01 WTF_USE_NLS_UNICODE
 #cmakedefine01 HAVE_LLVM
 #cmakedefine01 HAVE_GTK_UNIX_PRINTING
 

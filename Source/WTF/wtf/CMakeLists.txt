@@ -142,6 +142,7 @@ set(WTF_HEADERS
     unicode/CharacterNames.h
     unicode/Collator.h
     unicode/UTF8.h
+	unicode/Unicode.h
 )
 
 set(WTF_SOURCES
@@ -225,18 +226,39 @@ set(WTF_LIBRARIES
     ${CMAKE_DL_LIBS}
 )
 
-list(APPEND WTF_SOURCES
-    unicode/icu/CollatorICU.cpp
-)
-list(APPEND WTF_INCLUDE_DIRECTORIES
-    ${ICU_INCLUDE_DIRS}
-)
-list(APPEND WTF_LIBRARIES
-    ${ICU_I18N_LIBRARIES}
-    ${ICU_LIBRARIES}
-)
+if (WTF_USE_ICU_UNICODE)
+	list(APPEND WTF_HEADERS
+		unicode/icu/UnicodeICU.h
+	)
+	list(APPEND WTF_SOURCES
+	    unicode/icu/CollatorICU.cpp
+	)
+	list(APPEND WTF_INCLUDE_DIRECTORIES
+	    ${ICU_INCLUDE_DIRS}
+	)
+	list(APPEND WTF_LIBRARIES
+	    ${ICU_I18N_LIBRARIES}
+	    ${ICU_LIBRARIES}
+	)
+elseif (WTF_USE_NLS_UNICODE)
+	list(APPEND WTF_HEADERS
+		unicode/nls/UnicodeNLS.h
+		unicode/ScriptCodesFromICU.h
+		unicode/UnicodeMacrosFromICU.h
+	)
+	list(APPEND WTF_SOURCES
+		unicode/nls/UnicodeNLS.cpp
+		unicode/nls/CollatorNLS.cpp
+	)
+endif ()
 
-if (WIN32)
+if (WINDOWS_STORE OR WINDOWS_PHONE)
+    list(APPEND WTF_SOURCES
+        OSAllocatorWinRT.cpp
+        ThreadSpecificWinRT.cpp
+        ThreadingWinRT.cpp
+    )
+elseif (WIN32)
     list(APPEND WTF_SOURCES
         OSAllocatorWin.cpp
         ThreadSpecificWin.cpp

@@ -37,6 +37,8 @@
 #include <wtf/Atomics.h>
 #if OS(UNIX)
 #include <sched.h>
+#elif PLATFORM(WINRT)
+#include <thread>
 #endif
 
 #if ENABLE(COMPARE_AND_SWAP)
@@ -75,7 +77,11 @@ struct TCMalloc_SpinLock {
 static void TCMalloc_SlowLock(unsigned* lockword) {
   do {
 #if OS(WINDOWS)
+#if PLATFORM(WINRT)
+	std::this_thread::yield();
+#elif PLATFORM(WIN)
     Sleep(0);
+#endif
 #else
     sched_yield();
 #endif

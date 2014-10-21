@@ -25,7 +25,7 @@
 #define JSGlobalObjectFunctions_h
 
 #include "JSCJSValue.h"
-#include <unicode/uchar.h>
+#include <wtf/unicode/Unicode.h>
 #include <wtf/text/LChar.h>
 
 namespace JSC {

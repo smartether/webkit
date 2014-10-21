@@ -25,7 +25,7 @@
 #ifndef WindowsExtras_h
 #define WindowsExtras_h
 
-#if OS(WINDOWS)
+#if OS(WINDOWS) && !PLATFORM(WINRT)
 
 #include <windows.h>
 #include <objbase.h>
@@ -75,6 +75,6 @@ using WTF::getRegistryValue;
 using WTF::getWindowPointer;
 using WTF::setWindowPointer;
 
-#endif // OS(WINDOWS)
+#endif // OS(WINDOWS) && !PLATFORM(WINRT)
 
 #endif // WindowsExtras_h

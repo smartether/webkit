@@ -1,13 +1,14 @@
-list(APPEND JavaScriptCore_SOURCES
-    API/JSStringRefBSTR.cpp
-    API/JSStringRefCF.cpp
-)
+if (NOT (WINDOWS_STORE OR WINDOWS_PHONE))
+    list(APPEND JavaScriptCore_SOURCES
+        API/JSStringRefBSTR.cpp
+    )
+endif ()
 
 if (WTF_PLATFORM_WIN_CAIRO)
     list(APPEND JavaScriptCore_LIBRARIES
         CFLite
     )
-else ()
+elseif (NOT (WINDOWS_STORE OR WINDOWS_PHONE))
     list(APPEND JavaScriptCore_LIBRARIES
         CoreFoundation
     )

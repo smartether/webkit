@@ -1,15 +1,24 @@
 list(APPEND WTF_SOURCES
     threads/win/BinarySemaphoreWin.cpp
-
-    win/MainThreadWin.cpp
-    win/RunLoopWin.cpp
 )
+
+if (WINDOWS_STORE OR WINDOWS_PHONE)
+    list(APPEND WTF_SOURCES
+        win/MainThreadWinRT.cpp
+        win/RunLoopWinRT.cpp
+    )
+else ()
+    list(APPEND WTF_SOURCES
+        win/MainThreadWin.cpp
+        win/RunLoopWin.cpp
+    )
+endif ()
 
 if (WINCE)
     list(APPEND WTF_LIBRARIES
         mmtimer
     )
-else ()
+elseif (NOT (WINDOWS_STORE OR WINDOWS_PHONE))
     list(APPEND WTF_LIBRARIES
         winmm
     )

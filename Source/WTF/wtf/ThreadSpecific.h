@@ -49,6 +49,11 @@
 #include <pthread.h>
 #elif OS(WINDOWS)
 #include <windows.h>
+#if PLATFORM(WINRT)
+#include <thread>
+#include <atomic>
+#include "HashMap.h"
+#endif
 #endif
 
 namespace WTF {
@@ -101,8 +106,10 @@ private:
 
 #if USE(PTHREADS)
     pthread_key_t m_key;
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN)
     int m_index;
+#elif PLATFORM(WINRT)
+	long m_key;
 #endif
 };
 
@@ -156,7 +163,7 @@ inline void ThreadSpecific<T>::set(T* ptr)
     pthread_setspecific(m_key, new Data(ptr, this));
 }
 
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN)
 
 // TLS_OUT_OF_INDEXES is not defined on WinCE.
 #ifndef TLS_OUT_OF_INDEXES
@@ -216,6 +223,43 @@ inline void ThreadSpecific<T>::set(T* ptr)
     TlsSetValue(tlsKeys()[m_index], data);
 }
 
+#elif PLATFORM(WINRT)
+
+typedef long ThreadSpecificKey;
+typedef void(*Destructor)(void*);
+typedef std::pair<Destructor, void*> ThreadSpecificData;
+
+WTF_EXPORT_PRIVATE void threadSpecificKeyCreate(ThreadSpecificKey*, void(*)(void *));
+WTF_EXPORT_PRIVATE void threadSpecificKeyDelete(ThreadSpecificKey);
+WTF_EXPORT_PRIVATE void threadSpecificSet(ThreadSpecificKey, void*);
+WTF_EXPORT_PRIVATE void* threadSpecificGet(ThreadSpecificKey);
+
+WTF_EXPORT_PRIVATE HashMap<ThreadSpecificKey, ThreadSpecificData>& threadLocalHashMap();
+WTF_EXPORT_PRIVATE std::atomic<long>& tlsKeyCount();
+
+template<typename T>
+inline ThreadSpecific<T>::ThreadSpecific()
+	: m_key(tlsKeyCount()++)
+{
+	HashMap<ThreadSpecificKey, ThreadSpecificData>& map = threadLocalHashMap();
+	map.set(m_key, ThreadSpecificData(destroy, 0));
+}
+
+template<typename T>
+inline T* ThreadSpecific<T>::get()
+{
+	Data* data = static_cast<Data*>(threadLocalHashMap().get(m_key).second);
+	return data ? data->value : 0;
+}
+
+template<typename T>
+inline void ThreadSpecific<T>::set(T* ptr)
+{
+	ASSERT(!get());
+	HashMap<ThreadSpecificKey, ThreadSpecificData>& map = threadLocalHashMap();
+	map.set(m_key, ThreadSpecificData(destroy, new Data(ptr, this)));
+}
+
 #else
 #error ThreadSpecific is not implemented for this platform.
 #endif
@@ -236,8 +280,10 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 
 #if USE(PTHREADS)
     pthread_setspecific(data->owner->m_key, 0);
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN)
     TlsSetValue(tlsKeys()[data->owner->m_index], 0);
+#elif PLATFORM(WINRT)
+	threadLocalHashMap().set(data->owner->m_key, ThreadSpecificData(destroy, 0));
 #else
 #error ThreadSpecific is not implemented for this platform.
 #endif

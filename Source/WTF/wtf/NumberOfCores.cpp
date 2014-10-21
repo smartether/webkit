@@ -65,7 +65,11 @@ int numberOfProcessorCores()
 #elif OS(WINDOWS)
     UNUSED_PARAM(defaultIfUnavailable);
     SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
+#if PLATFORM(WINRT)
+    GetNativeSystemInfo(&sysInfo);
+#elif PLATFORM(WIN)
+	GetSystemInfo(&sysInfo);
+#endif
 
     s_numberOfCores = sysInfo.dwNumberOfProcessors;
 #else

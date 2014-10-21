@@ -173,9 +173,13 @@ double currentTime()
     double highResTime = highResUpTime();
 
     if (!syncedTime) {
+#if PLATFORM(WIN)
         timeBeginPeriod(1); // increase time resolution around low-res time getter
+#endif
         syncLowResUTCTime = lowResTime = lowResUTCTime();
+#if PLATFORM(WIN)
         timeEndPeriod(1); // restore time resolution
+#endif
         syncHighResUpTime = highResTime;
         syncedTime = true;
     }
@@ -313,7 +317,7 @@ double currentCPUTime()
     time += info.system_time.seconds + info.system_time.microseconds / 1000000.;
     
     return time;
-#elif OS(WINDOWS)
+#elif OS(WINDOWS) && PLATFORM(WIN)
     union {
         FILETIME fileTime;
         unsigned long long fileTimeAsLong;

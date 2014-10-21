@@ -31,7 +31,7 @@
 
 #include <wtf/Assertions.h>
 #include <limits>
-#include <unicode/utypes.h>
+#include <wtf/unicode/Unicode.h>
 
 namespace WTF {
 

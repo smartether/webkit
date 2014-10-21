@@ -92,6 +92,9 @@ public:
         static void timerFired(RunLoop*, uint64_t ID);
         uint64_t m_ID;
         bool m_isRepeating;
+#elif PLATFORM(WINRT)
+		Windows::UI::Xaml::DispatcherTimer^ m_timer;
+		Windows::Foundation::EventRegistrationToken m_eventToken;
 #elif PLATFORM(COCOA)
         static void timerFired(CFRunLoopTimerRef, void*);
         RetainPtr<CFRunLoopTimerRef> m_timer;
@@ -141,6 +144,8 @@ private:
 
     typedef HashMap<uint64_t, TimerBase*> TimerMap;
     TimerMap m_activeTimers;
+#elif PLATFORM(WINRT)
+	Windows::UI::Core::CoreDispatcher^ m_dispatcher;
 #elif PLATFORM(COCOA)
     static void performWork(void*);
     RetainPtr<CFRunLoopRef> m_runLoop;

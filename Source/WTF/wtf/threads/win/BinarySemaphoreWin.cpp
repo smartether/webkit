@@ -29,7 +29,11 @@
 namespace WTF {
 
 BinarySemaphore::BinarySemaphore()
-    : m_event(::CreateEventW(0, FALSE, FALSE, 0))
+#if PLATFORM(WINRT)
+    : m_event(::CreateEventEx(0, FALSE, FALSE, 0))
+#elif PLATFORM(WIN)
+	: m_event(::CreateEvent(0, FALSE, FALSE, 0))
+#endif
 {
 }
 
@@ -52,7 +56,11 @@ bool BinarySemaphore::wait(double absoluteTime)
         return false;
     }
 
-    DWORD result = ::WaitForSingleObject(m_event, interval);
+#if PLATFORM(WINRT)
+    DWORD result = ::WaitForSingleObjectEx(m_event, interval, false);
+#elif PLATFORM(WIN)
+	DWORD result = ::WaitForSingleObject(m_event, interval);
+#endif
     switch (result) {
     case WAIT_OBJECT_0:
         // The event was signaled.

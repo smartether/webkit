@@ -38,6 +38,11 @@
 #include <unistd.h>
 #endif
 
+#if PLATFORM(WINRT)
+#include <thread>
+#include <chrono>
+#endif
+
 namespace JSC {
 
 #if ENABLE(SAMPLING_FLAGS)
@@ -179,7 +184,7 @@ void SamplingRegion::dump() { }
 uint32_t SamplingFlags::s_flags = 1 << 15;
 
 
-#if OS(WINDOWS)
+#if PLATFORM(WIN)
 
 static void sleepForMicroseconds(unsigned us)
 {
@@ -187,6 +192,13 @@ static void sleepForMicroseconds(unsigned us)
     if (us && !ms)
         ms = 1;
     Sleep(ms);
+}
+
+#elif PLATFORM(WINRT)
+
+static void sleepForMicroseconds(unsigned us)
+{
+	std::this_thread::sleep_for(std::chrono::microseconds(us));
 }
 
 #else 

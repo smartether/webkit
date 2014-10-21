@@ -26,7 +26,7 @@
 #include "config.h"
 #include "BinarySemaphore.h"
 
-#if !PLATFORM(WIN)
+#if !OS(WINDOWS)
 
 namespace WTF {
 

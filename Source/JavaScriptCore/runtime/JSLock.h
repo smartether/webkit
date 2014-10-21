@@ -63,7 +63,7 @@ namespace JSC {
 
         static void initialize();
     private:
-        static std::mutex* s_sharedInstanceMutex;
+        static WTF::Mutex* s_sharedInstanceMutex;
     };
 
     class JSLockHolder {
@@ -133,7 +133,7 @@ namespace JSC {
         unsigned dropAllLocks(DropAllLocks*);
         void grabAllLocks(DropAllLocks*, unsigned lockCount);
 
-        std::mutex m_lock;
+        WTF::Mutex m_lock;
         std::thread::id m_ownerThreadID;
         intptr_t m_lockCount;
         unsigned m_lockDropDepth;
