@@ -107,7 +107,7 @@ static double highResUpTime()
 
     LARGE_INTEGER qpc;
     QueryPerformanceCounter(&qpc);
-#if defined(_M_IX86) || defined(__i386__)
+#if (defined(_M_IX86) || defined(__i386__)) && PLATFORM(WIN)
     DWORD tickCount = GetTickCount();
 #else
     ULONGLONG tickCount = GetTickCount64();
