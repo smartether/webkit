@@ -1102,8 +1102,11 @@ WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 
 WEBKIT_CREATE_FORWARDING_HEADERS(JavaScriptCore DIRECTORIES ${JavaScriptCore_FORWARDING_HEADERS_DIRECTORIES} FILES ${JavaScriptCore_FORWARDING_HEADERS_FILES})
 
-
-add_subdirectory(shell)
+if (SHOULD_INSTALL_JS_SHELL)
+    add_subdirectory(shell)
+else ()
+    add_subdirectory(shell EXCLUDE_FROM_ALL)
+endif ()
 
 WEBKIT_WRAP_SOURCELIST(${JavaScriptCore_SOURCES})
 include_directories(${JavaScriptCore_INCLUDE_DIRECTORIES})
