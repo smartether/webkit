@@ -99,7 +99,7 @@ template<typename T> template<typename U> inline PassRef<T>::PassRef(PassRef<U> 
 
 template<typename T> PassRef<T>::~PassRef()
 {
-    //ASSERT(m_gaveUpReference);
+    ASSERT(m_gaveUpReference);
 }
 
 #endif
