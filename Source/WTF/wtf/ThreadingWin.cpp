@@ -218,7 +218,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     unsigned threadIdentifier = 0;
     ThreadIdentifier threadID = 0;
     OwnPtr<ThreadFunctionInvocation> invocation = adoptPtr(new ThreadFunctionInvocation(entryPoint, data));
-#if OS(WINCE)
+#if OS(WINCE) || PLATFORM(WINRT)
     // This is safe on WINCE, since CRT is in the core and innately multithreaded.
     // On desktop Windows, need to use _beginthreadex (not available on WinCE) if using any CRT functions
     HANDLE threadHandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)wtfThreadEntryPoint, invocation.get(), 0, (LPDWORD)&threadIdentifier);
@@ -226,7 +226,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     HANDLE threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, wtfThreadEntryPoint, invocation.get(), 0, &threadIdentifier));
 #endif
     if (!threadHandle) {
-#if OS(WINCE)
+#if OS(WINCE) || PLATFORM(WINRT)
         LOG_ERROR("Failed to create thread at entry point %p with data %p: %ld", entryPoint, data, ::GetLastError());
 #elif !HAVE(ERRNO_H)
         LOG_ERROR("Failed to create thread at entry point %p with data %p.", entryPoint, data);
@@ -265,7 +265,7 @@ int waitForThreadCompletion(ThreadIdentifier threadID)
     if (!threadHandle)
         LOG_ERROR("ThreadIdentifier %u did not correspond to an active thread when trying to quit", threadID);
  
-    DWORD joinResult = WaitForSingleObject(threadHandle, INFINITE);
+    DWORD joinResult = WaitForSingleObjectEx(threadHandle, INFINITE, false);
     if (joinResult == WAIT_FAILED)
         LOG_ERROR("ThreadIdentifier %u was found to be deadlocked trying to quit", threadID);
 
@@ -293,7 +293,7 @@ ThreadIdentifier currentThread()
 Mutex::Mutex()
 {
     m_mutex.m_recursionCount = 0;
-    InitializeCriticalSection(&m_mutex.m_internalMutex);
+    InitializeCriticalSectionEx(&m_mutex.m_internalMutex, 0, 0);
 }
 
 Mutex::~Mutex()
@@ -343,7 +343,7 @@ void Mutex::unlock()
 bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMilliseconds)
 {
     // Enter the wait state.
-    DWORD res = WaitForSingleObject(m_blockLock, INFINITE);
+    DWORD res = WaitForSingleObjectEx(m_blockLock, INFINITE, false);
     ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
     ++m_waitersBlocked;
     res = ReleaseSemaphore(m_blockLock, 1, 0);
@@ -353,9 +353,9 @@ bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMillisecon
     LeaveCriticalSection(&mutex.m_internalMutex);
 
     // Main wait - use timeout.
-    bool timedOut = (WaitForSingleObject(m_blockQueue, durationMilliseconds) == WAIT_TIMEOUT);
+    bool timedOut = (WaitForSingleObjectEx(m_blockQueue, durationMilliseconds, false) == WAIT_TIMEOUT);
 
-    res = WaitForSingleObject(m_unblockLock, INFINITE);
+    res = WaitForSingleObjectEx(m_unblockLock, INFINITE, false);
     ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
 
     int signalsLeft = m_waitersToUnblock;
@@ -366,7 +366,7 @@ bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMillisecon
         // timeout or spurious wakeup occured, normalize the m_waitersGone count
         // this may occur if many calls to wait with a timeout are made and
         // no call to notify_* is made
-        res = WaitForSingleObject(m_blockLock, INFINITE);
+        res = WaitForSingleObjectEx(m_blockLock, INFINITE, false);
         ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
         m_waitersBlocked -= m_waitersGone;
         res = ReleaseSemaphore(m_blockLock, 1, 0);
@@ -392,7 +392,7 @@ void PlatformCondition::signal(bool unblockAll)
 {
     unsigned signalsToIssue = 0;
 
-    DWORD res = WaitForSingleObject(m_unblockLock, INFINITE);
+    DWORD res = WaitForSingleObjectEx(m_unblockLock, INFINITE, false);
     ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
 
     if (m_waitersToUnblock) { // the gate is already closed
@@ -412,7 +412,7 @@ void PlatformCondition::signal(bool unblockAll)
             --m_waitersBlocked;
         }
     } else if (m_waitersBlocked > m_waitersGone) {
-        res = WaitForSingleObject(m_blockLock, INFINITE); // Close the gate.
+        res = WaitForSingleObjectEx(m_blockLock, INFINITE, false); // Close the gate.
         ASSERT_UNUSED(res, res == WAIT_OBJECT_0);
         if (m_waitersGone != 0) {
             m_waitersBlocked -= m_waitersGone;
@@ -449,9 +449,9 @@ ThreadCondition::ThreadCondition()
     m_condition.m_waitersGone = 0;
     m_condition.m_waitersBlocked = 0;
     m_condition.m_waitersToUnblock = 0;
-    m_condition.m_blockLock = CreateSemaphore(0, 1, 1, 0);
-    m_condition.m_blockQueue = CreateSemaphore(0, 0, MaxSemaphoreCount, 0);
-    m_condition.m_unblockLock = CreateMutex(0, 0, 0);
+    m_condition.m_blockLock = CreateSemaphoreEx(0, 1, 1, 0, 0, NULL);
+    m_condition.m_blockQueue = CreateSemaphoreEx(0, 0, MaxSemaphoreCount, 0, 0, NULL);
+    m_condition.m_unblockLock = CreateMutexEx(0, 0, 0, NULL);
 
     if (!m_condition.m_blockLock || !m_condition.m_blockQueue || !m_condition.m_unblockLock) {
         if (m_condition.m_blockLock)

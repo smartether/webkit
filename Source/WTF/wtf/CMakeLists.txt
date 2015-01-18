@@ -252,15 +252,18 @@ elseif (WTF_USE_NLS_UNICODE)
 	)
 endif ()
 
-if (WINDOWS_STORE OR WINDOWS_PHONE)
+if (WIN32)
+    if (WINDOWS_STORE OR WINDOWS_PHONE)
+        list(APPEND WTF_SOURCES
+            OSAllocatorWinRT.cpp
+        )
+    else ()
+        list(APPEND WTF_SOURCES
+            OSAllocatorWin.cpp
+        )
+    endif ()
+    
     list(APPEND WTF_SOURCES
-        OSAllocatorWinRT.cpp
-        ThreadSpecificWinRT.cpp
-        ThreadingWinRT.cpp
-    )
-elseif (WIN32)
-    list(APPEND WTF_SOURCES
-        OSAllocatorWin.cpp
         ThreadSpecificWin.cpp
         ThreadingWin.cpp
     )
