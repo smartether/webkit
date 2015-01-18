@@ -21,8 +21,6 @@
 #ifndef JSLock_h
 #define JSLock_h
 
-#include <mutex>
-#include <thread>
 #include <wtf/Assertions.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/RefPtr.h>
@@ -96,12 +94,12 @@ namespace JSC {
         VM* vm() { return m_vm; }
 
         bool hasExclusiveThread() const { return m_hasExclusiveThread; }
-        std::thread::id exclusiveThread() const
+        ThreadIdentifier exclusiveThread() const
         {
             ASSERT(m_hasExclusiveThread);
             return m_ownerThreadID;
         }
-        JS_EXPORT_PRIVATE void setExclusiveThread(std::thread::id);
+        JS_EXPORT_PRIVATE void setExclusiveThread(ThreadIdentifier);
         JS_EXPORT_PRIVATE bool currentThreadIsHoldingLock();
 
         void willDestroyVM(VM*);
@@ -134,7 +132,7 @@ namespace JSC {
         void grabAllLocks(DropAllLocks*, unsigned lockCount);
 
         WTF::Mutex m_lock;
-        std::thread::id m_ownerThreadID;
+        ThreadIdentifier m_ownerThreadID;
         intptr_t m_lockCount;
         unsigned m_lockDropDepth;
         bool m_hasExclusiveThread;
