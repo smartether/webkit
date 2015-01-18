@@ -76,8 +76,10 @@ static size_t computeRAMSize()
     if (!result)
         return ramSizeGuess;
     return status.ullTotalPhys;
-#elif PLATFORM(WINRT)
+#elif PLATFORM(WINDOWS_PHONE)
 	return Windows::System::MemoryManager::AppMemoryUsageLimit;
+#elif PLATFORM(WINDOWS_STORE)
+	return ramSizeGuess;
 #endif
 #endif
 }
