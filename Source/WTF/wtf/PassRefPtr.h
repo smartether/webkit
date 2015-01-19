@@ -52,7 +52,12 @@ namespace WTF {
         ALWAYS_INLINE ~PassRefPtr() { derefIfNotNull(m_ptr); }
 
         template<typename U> PassRefPtr(const RefPtr<U>&);
+        // The MSVC ARM compiler doesn't handle copy elision as expected in some complex scenarios in debug mode.
+#if COMPILER(MSVC) && CPU(ARM)
+        template<typename U> PassRefPtr(PassRef<U>&& reference) : m_ptr(&reference.leakRef()) { }
+#else
         template<typename U> PassRefPtr(PassRef<U> reference) : m_ptr(&reference.leakRef()) { }
+#endif
 
         T* get() const { return m_ptr; }
 

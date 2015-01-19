@@ -76,7 +76,11 @@ namespace WTF {
         template<typename U> RefPtr& operator=(const PassRefPtr<U>&);
         RefPtr& operator=(RefPtr&&);
         template<typename U> RefPtr& operator=(RefPtr<U>&&);
+#if COMPILER(MSVC) && CPU(ARM)
+        template<typename U> RefPtr& operator=(PassRef<U>&&);
+#else
         template<typename U> RefPtr& operator=(PassRef<U>);
+#endif
 
         void swap(RefPtr&);
 
@@ -152,7 +156,12 @@ namespace WTF {
         return *this;
     }
 
+    // The MSVC ARM compiler doesn't handle copy elision as expected in some complex scenarios in debug mode.
+#if COMPILER(MSVC) && CPU(ARM)
+    template<typename T> template<typename U> inline RefPtr<T>& RefPtr<T>::operator=(PassRef<U>&& reference)
+#else
     template<typename T> template<typename U> inline RefPtr<T>& RefPtr<T>::operator=(PassRef<U> reference)
+#endif
     {
         RefPtr ptr = WTF::move(reference);
         swap(ptr);
