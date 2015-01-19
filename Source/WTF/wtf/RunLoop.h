@@ -45,6 +45,12 @@
 #include <wtf/efl/UniquePtrEfl.h>
 #endif
 
+#if PLATFORM(WINRT)
+#include <wrl/client.h>
+#include <eventtoken.h>
+#include <windows.ui.xaml.h>
+#endif
+
 namespace WTF {
 
 class RunLoop : public FunctionDispatcher {
@@ -93,8 +99,8 @@ public:
         uint64_t m_ID;
         bool m_isRepeating;
 #elif PLATFORM(WINRT)
-		Windows::UI::Xaml::DispatcherTimer^ m_timer;
-		Windows::Foundation::EventRegistrationToken m_eventToken;
+        Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::IDispatcherTimer> m_timer;
+        EventRegistrationToken m_eventToken;
 #elif PLATFORM(COCOA)
         static void timerFired(CFRunLoopTimerRef, void*);
         RetainPtr<CFRunLoopTimerRef> m_timer;
@@ -145,7 +151,7 @@ private:
     typedef HashMap<uint64_t, TimerBase*> TimerMap;
     TimerMap m_activeTimers;
 #elif PLATFORM(WINRT)
-	Windows::UI::Core::CoreDispatcher^ m_dispatcher;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> m_dispatcher;
 #elif PLATFORM(COCOA)
     static void performWork(void*);
     RetainPtr<CFRunLoopRef> m_runLoop;

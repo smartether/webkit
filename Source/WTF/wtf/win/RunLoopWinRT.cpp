@@ -29,23 +29,29 @@
 #include <locale.h>
 #include <wtf/CurrentTime.h>
 
+#include <wrl/wrappers/corewrappers.h>
+
 namespace WTF {
 
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Xaml;
 
 void RunLoop::run()
 {
-	current().m_dispatcher->ProcessEvents(Windows::UI::Core::CoreProcessEventsOption::ProcessOneAndAllPending);
+    CoreDispatcher^ dispatcher = reinterpret_cast<CoreDispatcher^>(current().m_dispatcher.Get());
+    dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
 }
 
 void RunLoop::stop()
 {
-	m_dispatcher->StopProcessEvents();
+    CoreDispatcher^ dispatcher = reinterpret_cast<CoreDispatcher^>(m_dispatcher.Get());
+    dispatcher->StopProcessEvents();
 }
 
 RunLoop::RunLoop()
-	: m_dispatcher(Windows::UI::Core::CoreWindow::GetForCurrentThread()->Dispatcher)
+    : m_dispatcher(reinterpret_cast<ABI::Windows::UI::Core::ICoreDispatcher*>(CoreWindow::GetForCurrentThread()->Dispatcher))
 {
-    
+
 }
 
 RunLoop::~RunLoop()
@@ -55,20 +61,19 @@ RunLoop::~RunLoop()
 
 void RunLoop::wakeUp()
 {
-	static auto priority = Windows::UI::Core::CoreDispatcherPriority::Normal;
-	auto callback = ref new Windows::UI::Core::DispatchedHandler([this]() {
-		performWork();
-	});
-	Windows::ApplicationModel::Core::CoreApplication::MainView->CoreWindow->Dispatcher->RunAsync(priority, callback);
+    static auto priority = CoreDispatcherPriority::Normal;
+    auto callback = ref new DispatchedHandler([this]() {
+        performWork();
+    });
+    Windows::ApplicationModel::Core::CoreApplication::MainView->CoreWindow->Dispatcher->RunAsync(priority, callback);
 }
 
 // RunLoop::Timer
 
 RunLoop::TimerBase::TimerBase(RunLoop& runLoop)
     : m_runLoop(runLoop)
-	, m_timer(ref new Windows::UI::Xaml::DispatcherTimer())
 {
-
+    Windows::Foundation::ActivateInstance(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_UI_Xaml_DispatcherTimer).Get(), m_timer.GetAddressOf());
 }
 
 RunLoop::TimerBase::~TimerBase()
@@ -78,27 +83,32 @@ RunLoop::TimerBase::~TimerBase()
 
 void RunLoop::TimerBase::start(double nextFireInterval, bool repeat)
 {
-	m_eventToken = m_timer->Tick += ref new Windows::Foundation::EventHandler<Platform::Object^>([this, repeat](Platform::Object^, Platform::Object^) {
-		fired();
-		if (!repeat)
-			stop();
-	});
+    DispatcherTimer^ timer = reinterpret_cast<DispatcherTimer^>(m_timer.Get());
+    Windows::Foundation::EventRegistrationToken eventToken = timer->Tick += ref new Windows::Foundation::EventHandler<Platform::Object^>([this, repeat](Platform::Object^, Platform::Object^) {
+        fired();
+        if (!repeat)
+            stop();
+    });
 
-	Windows::Foundation::TimeSpan interval;
-	interval.Duration = nextFireInterval * 1000.0;
-	m_timer->Interval = interval;
-	m_timer->Start();
+    m_eventToken = { eventToken.Value };
+
+    Windows::Foundation::TimeSpan interval;
+    interval.Duration = nextFireInterval * 1000.0;
+    timer->Interval = interval;
+    timer->Start();
 }
 
 void RunLoop::TimerBase::stop()
 {
-	m_timer->Stop();
-	m_timer->Tick -= m_eventToken;
+    m_timer->Stop();
+    m_timer->remove_Tick(m_eventToken);
 }
 
 bool RunLoop::TimerBase::isActive() const
 {
-	return m_timer->IsEnabled;
+    boolean isEnabled;
+    m_timer->get_IsEnabled(&isEnabled);
+    return isEnabled;
 }
 
 } // namespace WTF
