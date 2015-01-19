@@ -55,21 +55,21 @@ class JSGlobalObjectInspectorController final : public InspectorEnvironment {
     WTF_MAKE_NONCOPYABLE(JSGlobalObjectInspectorController);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    JSGlobalObjectInspectorController(JSC::JSGlobalObject&);
-    ~JSGlobalObjectInspectorController();
+    JS_EXPORT_PRIVATE JSGlobalObjectInspectorController(JSC::JSGlobalObject&);
+    JS_EXPORT_PRIVATE ~JSGlobalObjectInspectorController();
 
-    void connectFrontend(InspectorFrontendChannel*);
-    void disconnectFrontend(InspectorDisconnectReason reason);
-    void dispatchMessageFromFrontend(const String&);
+    JS_EXPORT_PRIVATE void connectFrontend(InspectorFrontendChannel*);
+    JS_EXPORT_PRIVATE void disconnectFrontend(InspectorDisconnectReason reason);
+    JS_EXPORT_PRIVATE void dispatchMessageFromFrontend(const String&);
 
-    void globalObjectDestroyed();
+    JS_EXPORT_PRIVATE void globalObjectDestroyed();
 
     bool includesNativeCallStackWhenReportingExceptions() const { return m_includeNativeCallStackWithExceptions; }
     void setIncludesNativeCallStackWhenReportingExceptions(bool includesNativeCallStack) { m_includeNativeCallStackWithExceptions = includesNativeCallStack; }
 
-    void reportAPIException(JSC::ExecState*, JSC::JSValue exception);
+    JS_EXPORT_PRIVATE void reportAPIException(JSC::ExecState*, JSC::JSValue exception);
 
-    JSC::ConsoleClient* consoleClient() const;
+    JS_EXPORT_PRIVATE JSC::ConsoleClient* consoleClient() const;
 
     virtual bool developerExtrasEnabled() const override { return true; }
     virtual bool canAccessInspectedScriptState(JSC::ExecState*) const override { return true; }

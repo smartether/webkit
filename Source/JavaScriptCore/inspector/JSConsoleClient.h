@@ -39,9 +39,9 @@ public:
     explicit JSConsoleClient(InspectorConsoleAgent*, InspectorProfilerAgent*);
     virtual ~JSConsoleClient() { }
 
-    static bool logToSystemConsole();
-    static void setLogToSystemConsole(bool);
-    static void initializeLogToSystemConsole();
+    JS_EXPORT_PRIVATE static bool logToSystemConsole();
+    JS_EXPORT_PRIVATE static void setLogToSystemConsole(bool);
+    JS_EXPORT_PRIVATE static void initializeLogToSystemConsole();
 
 protected:
     virtual void messageWithTypeAndLevel(MessageType, MessageLevel, JSC::ExecState*, PassRefPtr<ScriptArguments>) override;

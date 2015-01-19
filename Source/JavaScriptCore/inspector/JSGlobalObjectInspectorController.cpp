@@ -44,9 +44,12 @@
 #include "ScriptArguments.h"
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
+
+#if OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
+#endif
 
 using namespace JSC;
 
@@ -118,6 +121,7 @@ void JSGlobalObjectInspectorController::dispatchMessageFromFrontend(const String
 
 void JSGlobalObjectInspectorController::appendAPIBacktrace(ScriptCallStack* callStack)
 {
+#if OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))
     static const int framesToShow = 31;
     static const int framesToSkip = 3; // WTFGetBacktrace, appendAPIBacktrace, reportAPIException.
 
@@ -141,6 +145,7 @@ void JSGlobalObjectInspectorController::appendAPIBacktrace(ScriptCallStack* call
             callStack->append(ScriptCallFrame(ASCIILiteral("?"), ASCIILiteral("[native code]"), 0, 0));
         free(cxaDemangled);
     }
+#endif
 }
 
 void JSGlobalObjectInspectorController::reportAPIException(ExecState* exec, JSValue exception)
