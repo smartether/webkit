@@ -41,6 +41,10 @@ typedef const struct __CFString * CFStringRef;
 @class NSString;
 #endif
 
+#if PLATFORM(WINRT)
+#include <wrl/wrappers/corewrappers.h>
+#endif
+
 namespace JSC {
 namespace LLInt { class Data; }
 class LLIntOffsetsExtractor;
@@ -694,6 +698,10 @@ public:
 #endif
 #ifdef __OBJC__
     WTF_EXPORT_STRING_API operator NSString*();
+#endif
+
+#if PLATFORM(WINRT)
+    Microsoft::WRL::Wrappers::HString StringImpl::createHString() const;
 #endif
 
 #ifdef STRING_STATS

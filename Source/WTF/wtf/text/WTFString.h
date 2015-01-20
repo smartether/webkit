@@ -32,6 +32,10 @@
 #include <objc/objc.h>
 #endif
 
+#if PLATFORM(WINRT)
+#include <wrl/wrappers/corewrappers.h>
+#endif
+
 namespace WTF {
 
 class CString;
@@ -398,6 +402,11 @@ public:
     // This conversion maps NULL to "", which loses the meaning of NULL, but we
     // need this mapping because AppKit crashes when passed nil NSStrings.
     operator NSString*() const { if (!m_impl) return @""; return *m_impl; }
+#endif
+
+#if PLATFORM(WINRT)
+    WTF_EXPORT_STRING_API String(HSTRING);
+    WTF_EXPORT_STRING_API Microsoft::WRL::Wrappers::HString createHString() const;
 #endif
 
     WTF_EXPORT_STRING_API static String make8BitFrom16BitSource(const UChar*, size_t);
