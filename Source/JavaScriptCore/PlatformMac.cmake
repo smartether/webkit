@@ -1,23 +1,27 @@
-find_library(COCOA_LIBRARY Cocoa)
 find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-find_library(READLINE_LIBRARY Readline)
+find_library(FOUNDATION_LIBRARY Foundation)
 list(APPEND JavaScriptCore_LIBRARIES
     ${COREFOUNDATION_LIBRARY}
-    ${COCOA_LIBRARY}
-    ${READLINE_LIBRARY}
+    ${FOUNDATION_LIBRARY}
     libicucore.dylib
 )
 
-list(APPEND JavaScriptCore_SOURCES
-    API/JSAPIWrapperObject.mm
-    API/JSContext.mm
-    API/JSManagedValue.mm
-    API/JSStringRefCF.cpp
-    API/JSValue.mm
-    API/JSVirtualMachine.mm
-    API/JSWrapperMap.mm
-    API/ObjCCallbackFunction.mm
+if (JSC_OBJC_API_ENABLED)
+    list(APPEND JavaScriptCore_SOURCES
+        API/JSAPIWrapperObject.mm
+        API/JSContext.mm
+        API/JSManagedValue.mm
+        API/JSStringRefCF.cpp
+        API/JSValue.mm
+        API/JSVirtualMachine.mm
+        API/JSWrapperMap.mm
+        API/ObjCCallbackFunction.mm
+    )
+endif ()
 
+list(APPEND JavaScriptCore_SOURCES
+    API/JSStringRefCF.cpp
+    
     inspector/remote/RemoteInspector.mm
     inspector/remote/RemoteInspectorDebuggable.cpp
     inspector/remote/RemoteInspectorDebuggableConnection.mm
