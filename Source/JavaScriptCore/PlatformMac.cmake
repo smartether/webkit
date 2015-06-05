@@ -21,7 +21,7 @@ endif ()
 
 list(APPEND JavaScriptCore_SOURCES
     API/JSStringRefCF.cpp
-    
+    API/JSRemoteInspector.cpp
     inspector/remote/RemoteInspector.mm
     inspector/remote/RemoteInspectorDebuggable.cpp
     inspector/remote/RemoteInspectorDebuggableConnection.mm
@@ -33,7 +33,7 @@ add_custom_command(
     OUTPUT ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/TracingDtrace.h
     DEPENDS ${JAVASCRIPTCORE_DIR}/runtime/Tracing.d
     WORKING_DIRECTORY ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}
-    COMMAND dtrace -h -o "${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/TracingDtrace.h" -s "${JAVASCRIPTCORE_DIR}/runtime/Tracing.d"
+    COMMAND dtrace -h -o "${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/TracingDtrace.h" -s "${JAVASCRIPTCORE_DIR}/runtime/Tracing.d";
     VERBATIM)
 
 list(APPEND JavaScriptCore_INCLUDE_DIRECTORIES
