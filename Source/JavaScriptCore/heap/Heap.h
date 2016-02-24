@@ -73,7 +73,7 @@ namespace DFG {
 class Worklist;
 }
 
-static void* const zombifiedBits = reinterpret_cast<void*>(0xdeadbeef);
+static void* const zombifiedBits = reinterpret_cast<void*>(static_cast<uintptr_t>(0xdeadbeef));
 
 typedef std::pair<JSValue, WTF::String> ValueStringPair;
 typedef HashCountedSet<JSCell*> ProtectCountSet;
