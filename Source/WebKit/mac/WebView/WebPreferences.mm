@@ -1567,7 +1567,7 @@ public:
 #if !PLATFORM(IOS)
 - (PDFDisplayMode)PDFDisplayMode
 {
-    PDFDisplayMode value = [self _integerValueForKey:WebKitPDFDisplayModePreferenceKey];
+    PDFDisplayMode value = static_cast<PDFDisplayMode>([self _integerValueForKey:WebKitPDFDisplayModePreferenceKey]);
     if (value != kPDFDisplaySinglePage && value != kPDFDisplaySinglePageContinuous && value != kPDFDisplayTwoUp && value != kPDFDisplayTwoUpContinuous) {
         // protect against new modes from future versions of OS X stored in defaults
         value = kPDFDisplaySinglePageContinuous;
