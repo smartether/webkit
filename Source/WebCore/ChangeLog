@@ -23,6 +23,15 @@
         * platform/spi/mac/QTKitSPI.h:
         Add new QTKit header.
 
+2016-04-18  Anders Carlsson  <andersca@apple.com>
+
+        Fix build with newer versions of clang.
+        rdar://problem/25749769
+
+        Forward declare performClose:.
+
+        * platform/mac/WebCoreFullScreenWindow.mm:
+
 2016-03-04  Brady Eidson  <beidson@apple.com>
 
         Remove use of deprecated sqlite3_expired
