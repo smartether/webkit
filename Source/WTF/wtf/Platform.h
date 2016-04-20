@@ -1138,4 +1138,8 @@
 #define HAVE_COREANIMATION_FENCES 1
 #endif
 
+#if PLATFORM(IOS) && !USE(APPLE_INTERNAL_SDK)
+#define unorm_normalize(source, sourceLength, mode, options, result, resultLength, status) ios_specific_unorm_normalize(source, sourceLength, mode, options, result, resultLength, status)
+#endif
+
 #endif /* WTF_Platform_h */
