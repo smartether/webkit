@@ -23,6 +23,13 @@
         * platform/spi/mac/QTKitSPI.h:
         Add new QTKit header.
 
+2016-04-28  Daniel Bates  <dabates@apple.com>
+
+        Fix the Apple Internal OS X build
+
+        * platform/graphics/mac/PDFDocumentImageMac.mm:
+        (WebCore::PDFDocumentImage::drawPDFPage): Ignore deprecation warning for -[PDFPage drawWithBox:].
+
 2016-04-18  Anders Carlsson  <andersca@apple.com>
 
         Fix build with newer versions of clang.
