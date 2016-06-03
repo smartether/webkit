@@ -33,7 +33,7 @@
 #import "WebWindowAnimation.h"
 #import <AVFoundation/AVFoundation.h>
 #import <Carbon/Carbon.h>
-#import <QTKit/QTKit.h>
+#import "QTKitSPI.h"
 #import <WebCore/DisplaySleepDisabler.h>
 #import <WebCore/HTMLVideoElement.h>
 #import <WebCore/SoftLinking.h>
