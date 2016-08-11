@@ -1,3 +1,124 @@
+2016-06-02  Anders Carlsson  <andersca@apple.com>
+
+        Fix build
+        https://bugs.webkit.org/show_bug.cgi?id=158337
+        rdar://problem/26429419
+
+        Reviewed by Dan Bernstein.
+
+        * WebCore.xcodeproj/project.pbxproj:
+        Add QTKitSPI.h header.
+
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.h:
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        * platform/graphics/mac/MediaTimeQTKit.h:
+        * platform/graphics/mac/MediaTimeQTKit.mm:
+        * platform/mac/WebVideoFullscreenController.mm:
+        Include QTKitSPI.h.
+
+        * platform/spi/cocoa/QuartzCoreSPI.h:
+        * platform/spi/mac/AVFoundationSPI.h:
+        Use MAX_ALLOWED instead of MIN_REQUIRED.
+
+        * platform/spi/mac/QTKitSPI.h:
+        Add new QTKit header.
+
+2016-04-28  Daniel Bates  <dabates@apple.com>
+
+        Fix the Apple Internal OS X build
+
+        * platform/graphics/mac/PDFDocumentImageMac.mm:
+        (WebCore::PDFDocumentImage::drawPDFPage): Ignore deprecation warning for -[PDFPage drawWithBox:].
+
+2016-04-18  Anders Carlsson  <andersca@apple.com>
+
+        Fix build with newer versions of clang.
+        rdar://problem/25749769
+
+        Forward declare performClose:.
+
+        * platform/mac/WebCoreFullScreenWindow.mm:
+
+2016-03-04  Brady Eidson  <beidson@apple.com>
+
+        Remove use of deprecated sqlite3_expired
+        https://bugs.webkit.org/show_bug.cgi?id=155025
+
+        Reviewed by Tim Horton.
+
+        Since we exclusively use sqlite3_prepare_v2 and don't use sqlite3_prepare,
+        manually checking for expired statements is not necessary.
+
+        * platform/sql/SQLiteStatement.cpp:
+        (WebCore::SQLiteStatement::isExpired): Null check the statement, but don't bother
+          with sqlite3_expired.
+
+2015-12-03  Anders Carlsson  <andersca@apple.com>
+
+        Remove Objective-C GC support
+        https://bugs.webkit.org/show_bug.cgi?id=151819
+        rdar://problem/23746991
+
+        Reviewed by Dan Bernstein.
+
+        * Configurations/Base.xcconfig:
+        * bindings/objc/WebScriptObject.mm:
+        (+[WebScriptObject initialize]): Deleted.
+        (-[WebScriptObject finalize]): Deleted.
+        * bindings/scripts/CodeGeneratorObjC.pm:
+        (GenerateImplementation):
+        * bindings/scripts/test/ObjC/DOMTestActiveDOMObject.mm:
+        (-[DOMTestActiveDOMObject finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestCallback.mm:
+        (-[DOMTestCallback finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestCallbackFunction.mm:
+        (-[DOMTestCallbackFunction finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestCustomConstructorWithNoInterfaceObject.mm:
+        (-[DOMTestCustomConstructorWithNoInterfaceObject finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestCustomNamedGetter.mm:
+        (-[DOMTestCustomNamedGetter finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestEventConstructor.mm:
+        (-[DOMTestEventConstructor finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestEventTarget.mm:
+        (-[DOMTestEventTarget finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestException.mm:
+        (-[DOMTestException finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestGenerateIsReachable.mm:
+        (-[DOMTestGenerateIsReachable finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestInterface.mm:
+        (-[DOMTestInterface finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestJSBuiltinConstructor.mm:
+        (-[DOMTestJSBuiltinConstructor finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestMediaQueryListListener.mm:
+        (-[DOMTestMediaQueryListListener finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestNamedConstructor.mm:
+        (-[DOMTestNamedConstructor finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestNondeterministic.mm:
+        (-[DOMTestNondeterministic finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestObj.mm:
+        (-[DOMTestObj finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestOverloadedConstructors.mm:
+        (-[DOMTestOverloadedConstructors finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestOverrideBuiltins.mm:
+        (-[DOMTestOverrideBuiltins finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestSerializedScriptValueInterface.mm:
+        (-[DOMTestSerializedScriptValueInterface finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMTestTypedefs.mm:
+        (-[DOMTestTypedefs finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMattribute.mm:
+        (-[DOMattribute finalize]): Deleted.
+        * bindings/scripts/test/ObjC/DOMreadonly.mm:
+        (-[DOMreadonly finalize]): Deleted.
+        * bridge/objc/objc_instance.mm:
+        (ObjcInstance::virtualBegin):
+        (allocateAutoReleasePool): Deleted.
+        * platform/graphics/ca/cocoa/PlatformCALayerCocoa.mm:
+        * platform/mac/SharedBufferMac.mm:
+        (+[WebCoreSharedBufferData initialize]): Deleted.
+        (-[WebCoreSharedBufferData finalize]): Deleted.
+        * platform/mac/WebCoreObjCExtras.h:
+        (WebCoreObjCFinalizeOnMainThread): Deleted.
+
 2015-11-24  Antti Koivisto  <antti@apple.com>
 
         REGRESSION (r190983): Non-element, non-text nodes should not be distributed to slots
