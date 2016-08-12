@@ -622,6 +622,12 @@ static BOOL forceNSViewHitTest;
 
 // if YES, do the "top WebHTMLView" hit test (which we'd like to do all the time but can't because of Java requirements [see bug 4349721])
 static BOOL forceWebHTMLViewHitTest;
+
+@interface NSApplication ()
+- (BOOL)isSpeaking;
+- (void)stopSpeaking:(id)sender;
+@end
+
 #endif // !PLATFORM(IOS)
 
 static WebHTMLView *lastHitView;
@@ -1015,8 +1021,7 @@ static NSCellStateValue kit(TriState state)
     WTF::initializeMainThreadToProcessMainThread();
     RunLoop::initializeMainRunLoop();
 #endif
-    WebCoreObjCFinalizeOnMainThread(self);
-    
+
 #if !PLATFORM(IOS)
     if (!oldSetCursorForMouseLocationIMP) {
         Method setCursorMethod = class_getInstanceMethod([NSWindow class], @selector(_setCursorForMouseLocation:));
@@ -1065,16 +1070,6 @@ static NSCellStateValue kit(TriState state)
 #endif
 
     [super dealloc];
-}
-
-- (void)finalize
-{
-#if !PLATFORM(IOS)
-    if (promisedDragTIFFDataSource)
-        promisedDragTIFFDataSource->removeClient(promisedDataClient());
-#endif
-
-    [super finalize];
 }
 
 - (void)clear
@@ -2835,7 +2830,6 @@ static bool mouseEventIsPartOfClickOrDrag(NSEvent *event)
     WTF::initializeMainThreadToProcessMainThread();
     RunLoop::initializeMainRunLoop();
 #endif
-    WebCoreObjCFinalizeOnMainThread(self);
 }
 
 - (id)initWithFrame:(NSRect)frame
@@ -2879,15 +2873,6 @@ static bool mouseEventIsPartOfClickOrDrag(NSEvent *event)
     [_private release];
     _private = nil;
     [super dealloc];
-}
-
-- (void)finalize
-{
-    // We can't assert that close has already been called because
-    // this view can be removed from it's superview, even though
-    // it could be needed later, so close if needed.
-    [self close];
-    [super finalize];
 }
 
 // Returns YES if the delegate returns YES (so we should do no more work).

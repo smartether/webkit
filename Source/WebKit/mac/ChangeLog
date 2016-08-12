@@ -1,1 +1,108 @@
+2016-04-28  Daniel Bates  <dabates@apple.com>
+
+        Fix the Apple Internal OS X build
+
+        * WebView/WebPDFView.h: Import PDFKit for definition of protocol PDFViewDelegate.
+        Forward declare protocol PDFViewDelegate as appropriate. Mark WebPDFView as implementing
+        protocol PDFViewDelegate.
+        * WebView/WebPDFView.mm: Move import of PDFKit from here to the header.
+
+2016-04-18  Anders Carlsson  <andersca@apple.com>
+
+        Fix build with newer versions of clang.
+        rdar://problem/25749769
+
+        * WebCoreSupport/WebContextMenuClient.mm:
+        * WebView/WebHTMLView.mm:
+        Forward declare some AppKit IPI.
+
+2016-03-24  Tim Horton  <timothy_horton@apple.com>
+
+        Fix some new PDFKit-related warnings
+        https://bugs.webkit.org/show_bug.cgi?id=155847
+        <rdar://problem/25340312>
+
+        Reviewed by Anders Carlsson.
+
+        * WebView/WebPDFView.mm:
+        (-[WebPDFView setViewState:]):
+        * WebView/WebPreferences.mm:
+        (-[WebPreferences PDFDisplayMode]):
+        PDFDisplayMode is now a real enum.
+
+2015-12-03  Anders Carlsson  <andersca@apple.com>
+
+        Remove Objective-C GC support
+        https://bugs.webkit.org/show_bug.cgi?id=151819
+        rdar://problem/23746991
+
+        Reviewed by Dan Bernstein.
+
+        * Carbon/CarbonWindowAdapter.mm:
+        (+[CarbonWindowAdapter initialize]): Deleted.
+        (-[CarbonWindowAdapter finalize]): Deleted.
+        * Configurations/Base.xcconfig:
+        * History/WebBackForwardList.mm:
+        (+[WebBackForwardList initialize]): Deleted.
+        (-[WebBackForwardList finalize]): Deleted.
+        * History/WebHistory.mm:
+        (-[WebHistoryPrivate finalize]): Deleted.
+        (-[WebHistory finalize]): Deleted.
+        * History/WebHistoryItem.mm:
+        (+[WebHistoryItem initialize]): Deleted.
+        (-[WebHistoryItem finalize]): Deleted.
+        * Misc/WebElementDictionary.mm:
+        (+[WebElementDictionary initialize]): Deleted.
+        (-[WebElementDictionary finalize]): Deleted.
+        * Plugins/Hosted/WebHostedNetscapePluginView.mm:
+        (+[WebHostedNetscapePluginView initialize]): Deleted.
+        * Plugins/WebBaseNetscapePluginView.mm:
+        (-[WebBaseNetscapePluginView finalize]): Deleted.
+        * Plugins/WebBasePluginPackage.mm:
+        (-[WebBasePluginPackage finalize]): Deleted.
+        * Plugins/WebNetscapePluginView.mm:
+        (+[WebNetscapePluginView initialize]): Deleted.
+        (-[WebNetscapePluginView finalize]): Deleted.
+        * Plugins/WebPluginContainerCheck.mm:
+        (-[WebPluginContainerCheck finalize]): Deleted.
+        * WebCoreSupport/WebEditorClient.mm:
+        (+[WebUndoStep initialize]): Deleted.
+        (-[WebUndoStep finalize]): Deleted.
+        * WebCoreSupport/WebFrameLoaderClient.mm:
+        * WebCoreSupport/WebOpenPanelResultListener.mm:
+        (-[WebOpenPanelResultListener finalize]): Deleted.
+        * WebCoreSupport/WebSecurityOrigin.mm:
+        (-[WebSecurityOrigin finalize]): Deleted.
+        * WebView/WebArchive.mm:
+        (+[WebArchivePrivate initialize]): Deleted.
+        * WebView/WebDataSource.mm:
+        (+[WebDataSource initialize]): Deleted.
+        (-[WebDataSource finalize]): Deleted.
+        * WebView/WebDynamicScrollBarsView.mm:
+        (-[WebDynamicScrollBarsView finalize]): Deleted.
+        * WebView/WebFrame.mm:
+        (-[WebFramePrivate setWebFrameView:]):
+        (-[WebFramePrivate finalize]): Deleted.
+        (-[WebFrame finalize]): Deleted.
+        * WebView/WebFrameView.mm:
+        (-[WebFrameView finalize]): Deleted.
+        * WebView/WebHTMLRepresentation.mm:
+        (-[WebHTMLRepresentation finalize]): Deleted.
+        * WebView/WebHTMLView.mm:
+        (+[WebHTMLViewPrivate initialize]):
+        (-[WebHTMLViewPrivate finalize]): Deleted.
+        (+[WebHTMLView initialize]): Deleted.
+        (-[WebHTMLView finalize]): Deleted.
+        * WebView/WebResource.mm:
+        (+[WebResourcePrivate initialize]): Deleted.
+        (-[WebResourcePrivate finalize]): Deleted.
+        * WebView/WebTextIterator.mm:
+        (+[WebTextIteratorPrivate initialize]): Deleted.
+        * WebView/WebView.mm:
+        (-[WebView finalize]): Deleted.
+        * WebView/WebViewData.mm:
+        (+[WebViewPrivate initialize]): Deleted.
+        (-[WebViewPrivate init]): Deleted.
+        (-[WebViewPrivate finalize]): Deleted.
+
 == Rolled over to ChangeLog-2015-11-21 ==

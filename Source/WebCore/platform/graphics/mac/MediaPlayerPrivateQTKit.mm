@@ -38,10 +38,10 @@
 #import "MediaTimeQTKit.h"
 #import "PlatformLayer.h"
 #import "PlatformTimeRanges.h"
+#import "QTKitSPI.h"
 #import "SecurityOrigin.h"
 #import "SoftLinking.h"
 #import "WebCoreSystemInterface.h"
-#import <QTKit/QTKit.h>
 #import <objc/runtime.h>
 
 SOFT_LINK_FRAMEWORK(QTKit)
